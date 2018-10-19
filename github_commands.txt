@@ -1,0 +1,18 @@
+- First clone the repository : Go to a folder within your terminal and enter 
+git clone https://github.com/JulesBelveze/ProjectComputationalToolsForDataScience.git
+
+
+- to check branches : git branch
+- to change current branch : git checkout branch_name
+- to create a branch git branch branch_name
+!!!! Never work on the master !!!!
+
+Before working, in order to get the last modifications :
+- git fetch --prune (to check if new branches have been created)
+- git pull origin branch_name (to get other people work)
+
+After working :
+- git add . 
+- git commit -m " short description of what you did "
+- git push origin branch_name
+
