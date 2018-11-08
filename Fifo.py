@@ -13,3 +13,6 @@ class Fifo:
 
     def addElement(self, elementToAdd):
         self.__list.append(elementToAdd)
+
+    def isFifoEmpty(self):
+        return self.__list == []
