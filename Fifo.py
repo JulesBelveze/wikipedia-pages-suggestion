@@ -4,7 +4,7 @@ class Fifo:
 
     def removeFirstIn(self):
         try:
-            self.__list.pop(0)
+            return self.__list.pop(0)
         except IndexError:
             pass
 
@@ -16,3 +16,6 @@ class Fifo:
 
     def isFifoEmpty(self):
         return self.__list == []
+
+    def getList(self):
+        return self.__list

@@ -8,6 +8,8 @@ from collections import Counter
 def wikiPagesFinder(url, countable=False):
     response = requests.get(url)
     wikilinks = re.findall(r'\[\[(.*?)[\]\]|\]\]]', response.text)
+    #    wikilinks = [link.replace(' ', "_") for link in wikilinks]
+    wikilinks = [urlWikiPagesConstructor(link) for link in wikilinks]
     return Counter(wikilinks) if countable is True else list(set(wikilinks))
 
 
@@ -22,4 +24,4 @@ def urlWikiPagesConstructor(page_name):
     query = "%s%s&%s&%s&%s&%s&%s" % (baseurl, action, title, content, rvprop, dataformat, limit)
     return query
 
-print(wikiPagesFinder("http://en.wikipedia.org/w/api.php/?action=query&titles=John_Lennon&prop=revisions&rvprop=timestamp|content&format=json&rvlimit=1"))
+# print(wikiPagesFinder("http://en.wikipedia.org/w/api.php/?action=query&titles=John_Lennon&prop=revisions&rvprop=timestamp|content&format=json&rvlimit=1"))

@@ -20,5 +20,5 @@ class UrlDistinctTester:
 
         return initially_in
 
-    def get_bitvector(self):
+    def getBitvector(self):
         return self.__bitvector
