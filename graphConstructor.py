@@ -19,7 +19,7 @@ def graphConstructor(wikiInput, stop):
         current_url = fifo.removeFirstIn()  # extracting elt to use
         print(current_url)
         depthC.elementsTreated()
-        depthC.cursorUpdate()
+        print(depthC.getCursor(), depthC.getTable())
         links_current_url = WikiPagesReader.wikiPagesFinder(current_url)  # computing all mentionned pages
 
         # removing all url already in fifo
@@ -31,6 +31,8 @@ def graphConstructor(wikiInput, stop):
         if depthC.depthControl():
             fifo.addList(links_current_distinct_url)  # add all the element mentionned in the current fifo
             depthC.addElementsToTreat(links_current_distinct_url)
+
+        depthC.cursorUpdate()
 
         G.add_node(current_url)
         G.add_nodes_from(links_current_distinct_url)
@@ -45,5 +47,5 @@ def graphConstructor(wikiInput, stop):
 
 if __name__ == "__main__":
     graphConstructor(
-        "http://en.wikipedia.org/w/api.php/?action=query&titles=England&prop=revisions&rvprop=timestamp|content&format=json&rvdir=older&rvstart=2018-09-25T00:00:00Z&rvend=2017-01-03T00:00:00Z&rvlimit=1",
-        1)
+        "http://en.wikipedia.org/w/api.php/?action=query&titles=Asbel_Kiprop&prop=revisions&rvprop=timestamp|content&format=json&rvdir=older&rvstart=2018-09-25T00:00:00Z&rvend=2017-01-03T00:00:00Z&rvlimit=1",
+        2)
