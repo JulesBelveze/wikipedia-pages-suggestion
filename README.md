@@ -11,7 +11,7 @@ Thus the intention is to retrieve the most linked nodes which there is a path fr
 <li>Be able to extract Wikipedia links from a page. &#9989;</li>
 <li>Define a relevant criteria to stop going through pages (experimentaly). Option : compute the number of occurences of pages. &#9989;</li>
 <li>Construct a network where nodes are pages and draw an edge from A to B if B is mentionned in page A. &#9989; </li>
-<li>Construct a PageRank. May use MapReduce for the matrix product in PageRank.</li>
+<li>Construct a PageRank &#9989;.</li>
 <li>Cluster all pages (which similarity ?).</li>
 <li>Display the nodes with the highest page rank of each cluster.</li>
 
