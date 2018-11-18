@@ -22,3 +22,11 @@ class UrlDistinctTester:
 
     def getBitvector(self):
         return self.__bitvector
+
+    def checkInTable(self, elmt):
+        hash_elmt = mmh3.hash(elmt, 1)
+        if self.__bitvector[hash_elmt]:
+            is_in = True
+        else:
+            is_in = False
+        return is_in
