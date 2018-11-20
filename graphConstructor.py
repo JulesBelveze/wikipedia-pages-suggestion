@@ -1,6 +1,7 @@
 import Fifo
 import WikiPagesReader
 import hashingTable
+import DBSCAN
 import depthController
 import networkx as nx
 import matplotlib.pyplot as plt
@@ -63,7 +64,9 @@ def graphConstructor(wikiInput, stop):
 def graphLoader(path):
     G = nx.read_gml(path)
     G = removeIsolatedNodes(G)
-
+    
+    G.remove_node(list(G.nodes)[0])
+    print(DBSCAN.dbscan(G, 1, 2))
     # pos = nx.spring_layout(G)
     # nx.draw(G, pos, node_size=2, width=.3)
     # plt.show()
@@ -83,5 +86,5 @@ if __name__ == "__main__":
     # graphConstructor(
     #     "http://en.wikipedia.org/w/api.php/?action=query&titles=Asbel_Kiprop&prop=revisions&rvprop=timestamp|content&format=json&rvdir=older&rvstart=2018-09-25T00:00:00Z&rvend=2017-01-03T00:00:00Z&rvlimit=1",
     #     2)
-    graphLoader("network_depth_3.gml")
+    graphLoader("network_depth_2.gml")
     print(time() - top)
