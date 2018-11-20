@@ -62,13 +62,26 @@ def graphConstructor(wikiInput, stop):
 
 def graphLoader(path):
     G = nx.read_gml(path)
-    nx.draw(G)
-    plt.show()
+    G = removeIsolatedNodes(G)
+
+    # pos = nx.spring_layout(G)
+    # nx.draw(G, pos, node_size=2, width=.3)
+    # plt.show()
+
+# function removing all nodes that are targeted only once and which are not targeting anyone
+def removeIsolatedNodes(G):
+    node_list = list(G.nodes())
+    for node in node_list:
+        if (len(G.out_edges(node)) == 0) and (len(G.in_edges(node)) == 1):
+            G.remove_node(node)
+
+    return G
 
 
 if __name__ == "__main__":
     top = time()
-    graphConstructor(
-        "http://en.wikipedia.org/w/api.php/?action=query&titles=Asbel_Kiprop&prop=revisions&rvprop=timestamp|content&format=json&rvdir=older&rvstart=2018-09-25T00:00:00Z&rvend=2017-01-03T00:00:00Z&rvlimit=1",
-        2)
+    # graphConstructor(
+    #     "http://en.wikipedia.org/w/api.php/?action=query&titles=Asbel_Kiprop&prop=revisions&rvprop=timestamp|content&format=json&rvdir=older&rvstart=2018-09-25T00:00:00Z&rvend=2017-01-03T00:00:00Z&rvlimit=1",
+    #     2)
+    graphLoader("network_depth_3.gml")
     print(time() - top)
