@@ -1,7 +1,7 @@
 import Fifo
 import WikiPagesReader
 import hashingTable
-import DBSCAN
+import dbscan_tes
 import depthController
 import networkx as nx
 import matplotlib.pyplot as plt
@@ -64,9 +64,12 @@ def graphConstructor(wikiInput, stop):
 def graphLoader(path):
     G = nx.read_gml(path)
     G = removeIsolatedNodes(G)
-    
+
     G.remove_node(list(G.nodes)[0])
-    print(DBSCAN.dbscan(G, 1, 2))
+    pos = nx.kamada_kawai_layout(G)
+    pos = dbscan_tes.transf(pos)
+    dbscan_tes.dbscan(pos, .2, 3)
+    # print(DBSCAN.dbscan(G, 1, 2))
     # pos = nx.spring_layout(G)
     # nx.draw(G, pos, node_size=2, width=.3)
     # plt.show()
