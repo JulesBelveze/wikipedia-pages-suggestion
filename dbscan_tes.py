@@ -51,15 +51,7 @@ def dbscan(data, eps, minPts):
     # print(dico_visit)
     # print(dico_clusters)
     # print(invert_dico_cluster)
-
-    results = ""
-    for index in range(len(data)):
-        if dico_visit[index] == 'noise':
-            results = results + "0 "
-        else:
-            results = results + str(invert_dico_cluster[index]) + " "
-    print(results)
-
+    return dico_clusters
 
 ### 3rd step ###
 def expand(i, neighbours, eps, minPts, dico_visit, data):
