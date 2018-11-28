@@ -23,16 +23,26 @@ def graphAnalyzer(graph):
 
     # ----------------------------------- Clustering Computation --------------------------------------
 
-    pos = nx.kamada_kawai_layout(G)
+    pos = nx.spring_layout(G)
+    # TRY TO APPLY KK TO SPRING LAYOUT
     pos_transf = dbscan_tes.transf(pos)  # changing position format to be able to use it in DBSCAN
 
-    clusters = dbscan_tes.dbscan(pos_transf, 0.07, 10)
+    clusters = dbscan_tes.dbscan(pos_transf, .008, 15)
 
     cluster_with_pr = associatingPageRankToNode(pr, clusters)
 
     # sorting each cluster according to page rank result
     for key in cluster_with_pr.keys():
         cluster_with_pr[key] = sorted(cluster_with_pr[key], key=lambda item: (item[1], item[0]))
+
+    # list of 2-uples containing the highest page rank node from each cluster
+    highest_pr_per_cluster = [cluster_with_pr[key][0] for key in cluster_with_pr.keys()]
+
+    # sorting this list by page rank
+    highest_pr_per_cluster = sorted(highest_pr_per_cluster, key=lambda item: (item[1], item[0]))
+
+    for elt in highest_pr_per_cluster:
+        print(list(G.nodes())[elt[0]], " page rank : ", elt[1])
 
     # ----------------------------------- Graph Creation --------------------------------------
 
@@ -45,9 +55,15 @@ def graphAnalyzer(graph):
         for elt in value:
             node_color[elt] = colors[key]
 
-    nx.draw(G, pos, node_size=2, width=.1, edge_color='grey', node_color=node_color, arrows_size=.4)
-    # plt.show()
-    plt.savefig("graph2.png")
+    nx.draw(G.to_undirected(), pos, node_size=2, width=.05, edge_color='grey', node_color=node_color)
+    plt.savefig("graph_with_layout.png")
+
+    plt.figure()
+
+    node_color = ['blue' for _ in range(len(G.nodes()))]
+    node_color[0] = 'red'
+    nx.draw(G.to_undirected(), node_color=node_color, node_size=2, width=.05, edge_color='grey')
+    plt.savefig("graph_without_layout.png")
 
 
 def removeIsolatedNodes(G):
@@ -59,11 +75,10 @@ def removeIsolatedNodes(G):
     return G
 
 
-
 def associatingPageRankToNode(pr, cluster):
     """function taking a pagerank results and cluster dictionnary
     and returning a dictionnary with as key the cluster number and values a list of 2-uples
-    containing node index and its page rank"""
+    containing node index from this cluster and its page rank"""
     cluster_with_pr = {}
 
     for key, value in cluster.items():
@@ -74,5 +89,5 @@ def associatingPageRankToNode(pr, cluster):
 
 if __name__ == "__main__":
     top = time()
-    graphLoader("network_depth_2.gml")
+    graphAnalyzer("network_depth_2.gml")
     print(time() - top)
