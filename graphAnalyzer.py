@@ -4,6 +4,8 @@ import PageRank
 import networkx as nx
 import matplotlib.pyplot as plt
 from time import time
+import fa2
+import numpy as np
 
 
 def graphAnalyzer(graph):
@@ -20,14 +22,39 @@ def graphAnalyzer(graph):
     pr = PageRank.PageRank(G)
     pr.constructDispersionMatrix(G)
     pr = pr.getPageRank()
+    print(len(set(pr)))
 
     # ----------------------------------- Clustering Computation --------------------------------------
 
-    pos = nx.spring_layout(G)
-    # TRY TO APPLY KK TO SPRING LAYOUT
+    forceatlas2 = fa2.ForceAtlas2(
+        # Behavior alternatives
+        outboundAttractionDistribution=False,  # Dissuade hubs
+        linLogMode=False,  # NOT IMPLEMENTED
+        adjustSizes=False,  # Prevent overlap (NOT IMPLEMENTED)
+        edgeWeightInfluence=0,
+
+        # Performance
+        jitterTolerance=.01,  # Tolerance
+        barnesHutOptimize=True,
+        barnesHutTheta=1.2,
+        multiThreaded=False,  # NOT IMPLEMENTED
+
+        # Tuning
+        scalingRatio=1,
+        strongGravityMode=True,
+        gravity=200,
+        # Log
+        verbose=True)
+
+    pos = forceatlas2.forceatlas2_networkx_layout(G,
+                                                  pos=None,
+                                                  iterations=300);
+
+    pos = {key: np.array([elt[0], elt[1]]) for key, elt in pos.items()}
+
     pos_transf = dbscan_tes.transf(pos)  # changing position format to be able to use it in DBSCAN
 
-    clusters = dbscan_tes.dbscan(pos_transf, .008, 15)
+    clusters = dbscan_tes.dbscan(pos_transf, 24, 16)
 
     cluster_with_pr = associatingPageRankToNode(pr, clusters)
 
