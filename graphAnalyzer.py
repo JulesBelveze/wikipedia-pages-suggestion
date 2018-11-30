@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 from time import time
 import fa2
 import numpy as np
+from sklearn.cluster import KMeans
 
 
 def graphAnalyzer(graph):
@@ -22,7 +23,7 @@ def graphAnalyzer(graph):
     pr = PageRank.PageRank(G)
     pr.constructDispersionMatrix(G)
     pr = pr.getPageRank()
-    print(len(set(pr)))
+    print(max(pr))
 
     # ----------------------------------- Clustering Computation --------------------------------------
 
@@ -46,30 +47,51 @@ def graphAnalyzer(graph):
         # Log
         verbose=True)
 
+    # pos is a dict with keys node name avec value the positions 2-uple
     pos = forceatlas2.forceatlas2_networkx_layout(G,
                                                   pos=None,
-                                                  iterations=300);
+                                                  iterations=1000);
 
-    pos = {key: np.array([elt[0], elt[1]]) for key, elt in pos.items()}
+    # converting positions into a list of np.array
+    pos_list = [np.array([elt[0], elt[1]]) for key, elt in pos.items()]
 
-    pos_transf = dbscan_tes.transf(pos)  # changing position format to be able to use it in DBSCAN
+    # clustering the nodes according to the AffinityPropagation algorithm using scikit-learn
+    clustering = KMeans().fit(pos_list)
+    clustering = clustering.labels_
+    print(clustering)
 
-    clusters = dbscan_tes.dbscan(pos_transf, 24, 16)
+    # retrieving the index of nodes in each cluster and creating a dict where key is
+    # the cluster number and value a list of all the nodes in that cluster
+    clusters = {}
+    for index, elt in enumerate(list(clustering)):
+        try:
+            clusters[elt].append(index)
+        except KeyError:
+            clusters[elt] = [index]
+
+    # filtering the cluster : categorizing cluster with length < 10 as noises (cluster number 0)
+    filtered_cluster, k = {0: []}, 1
+    for key, elt in clusters.items():
+        if len(clusters[key]) > 10:
+            filtered_cluster[k] = elt
+            k += 1
+        else:
+            filtered_cluster[0].extend(elt)
+
+    clusters = filtered_cluster
 
     cluster_with_pr = associatingPageRankToNode(pr, clusters)
 
-    # sorting each cluster according to page rank result
-    for key in cluster_with_pr.keys():
-        cluster_with_pr[key] = sorted(cluster_with_pr[key], key=lambda item: (item[1], item[0]))
+    # sort each cluster by page rank
+    for key, value in cluster_with_pr.items():
+        cluster_with_pr[key] = sorted(value, key=lambda item: (item[1], item[0]))
 
-    # list of 2-uples containing the highest page rank node from each cluster
-    highest_pr_per_cluster = [cluster_with_pr[key][0] for key in cluster_with_pr.keys()]
-
-    # sorting this list by page rank
-    highest_pr_per_cluster = sorted(highest_pr_per_cluster, key=lambda item: (item[1], item[0]))
-
-    for elt in highest_pr_per_cluster:
-        print(list(G.nodes())[elt[0]], " page rank : ", elt[1])
+    for key, value in cluster_with_pr.items():
+        try:
+            node_index = value[-1][0]
+            print(list(G.nodes())[node_index], "page rank :", value[-1][1])
+        except IndexError:
+            pass
 
     # ----------------------------------- Graph Creation --------------------------------------
 
@@ -77,7 +99,8 @@ def graphAnalyzer(graph):
     get_colors = lambda n: list(map(lambda i: "#" + "%06x" % random.randint(0, 0xFFFFFF), range(n)))
 
     colors = get_colors(len(clusters.keys()) + 1)
-    node_color = ['black' for _ in range(len(G.nodes()))]
+    colors[0] = 'black'
+    node_color = ['' for _ in range(len(G.nodes()))]
     for key, value in clusters.items():
         for elt in value:
             node_color[elt] = colors[key]
