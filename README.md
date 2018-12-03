@@ -12,7 +12,7 @@ Thus the intention is to retrieve the most linked nodes which there is a path fr
 <li>Define a relevant criteria to stop going through pages (experimentaly). Option : compute the number of occurences of pages. &#9989;</li>
 <li>Construct a network where nodes are pages and draw an edge from A to B if B is mentionned in page A. &#9989; </li>
 <li>Construct a PageRank &#9989;.</li>
-<li>Cluster all pages (which similarity ?).</li>
-<li>Display the nodes with the highest page rank of each cluster.</li>
+<li>Cluster all pages using either scikit-learn K-Mean of our implementation of DBSCAN &#9989;.</li>
+<li>Display the nodes with the highest page rank of each cluster &#9989;.</li>
 
 <br>Bonus idea : network statistics
