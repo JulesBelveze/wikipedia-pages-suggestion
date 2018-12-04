@@ -1,15 +1,19 @@
-import random
-import dbscan_tes
+import dbscan
 import PageRank
+import Kmeans
+import re
+import random
+import fa2
+import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
 from time import time
-import fa2
-import numpy as np
 
 
-def graphAnalyzer(graph):
-    """Argument: the path to find a .gml graph file
+
+def graphAnalyzer(graph, kmeans=False):
+    """Argument: the path to find a .gml graph file, boolean : if yes using scikit-learn KMean to cluster otherwise
+    using our dbscan algorithm.
     Will page rank and cluster the nodes in order to return the highest page rank page in the three biggest clusters
     It also print a graph in order to visualize the clustering"""
     G = nx.read_gml(graph)
@@ -22,10 +26,10 @@ def graphAnalyzer(graph):
     pr = PageRank.PageRank(G)
     pr.constructDispersionMatrix(G)
     pr = pr.getPageRank()
-    print(len(set(pr)))
 
     # ----------------------------------- Clustering Computation --------------------------------------
 
+    # constructing network layout
     forceatlas2 = fa2.ForceAtlas2(
         # Behavior alternatives
         outboundAttractionDistribution=False,  # Dissuade hubs
@@ -48,28 +52,36 @@ def graphAnalyzer(graph):
 
     pos = forceatlas2.forceatlas2_networkx_layout(G,
                                                   pos=None,
-                                                  iterations=300);
+                                                  iterations=1000);
 
-    pos = {key: np.array([elt[0], elt[1]]) for key, elt in pos.items()}
+    if kmeans:
+        # converting positions into a list of np.array
+        pos_list = [np.array([elt[0], elt[1]]) for key, elt in pos.items()]
 
-    pos_transf = dbscan_tes.transf(pos)  # changing position format to be able to use it in DBSCAN
+        # clustering the nodes according to the kmeans algorithm
+        clusters = Kmeans.kmeans(pos_list, 8, 0.01, 300)
 
-    clusters = dbscan_tes.dbscan(pos_transf, 24, 16)
+    else:
+        pos = {key: np.array([elt[0], elt[1]]) for key, elt in pos.items()}
+        pos_transf = dbscan.transf(pos)  # changing position format to be able to use it in DBSCAN
+        clusters = dbscan.dbscan(pos_transf, 40, 20)  # clustering
 
     cluster_with_pr = associatingPageRankToNode(pr, clusters)
 
     # sorting each cluster according to page rank result
-    for key in cluster_with_pr.keys():
-        cluster_with_pr[key] = sorted(cluster_with_pr[key], key=lambda item: (item[1], item[0]))
+    for key, value in cluster_with_pr.items():
+        cluster_with_pr[key] = sorted(value, key=lambda item: (item[1], item[0]))
 
-    # list of 2-uples containing the highest page rank node from each cluster
-    highest_pr_per_cluster = [cluster_with_pr[key][0] for key in cluster_with_pr.keys()]
-
-    # sorting this list by page rank
-    highest_pr_per_cluster = sorted(highest_pr_per_cluster, key=lambda item: (item[1], item[0]))
-
-    for elt in highest_pr_per_cluster:
-        print(list(G.nodes())[elt[0]], " page rank : ", elt[1])
+    # rendering the suggested pages and their page rank
+    print("\nThe recommanded pages are the following :")
+    for key, value in cluster_with_pr.items():
+        try:
+            node_index = value[-1][0]  # retrieving the node index
+            title_node = re.search(r'titles=(.*?)\&',
+                                   list(G.nodes())[node_index])  # getting the title of the Wikipedia page
+            print("•", title_node.group(1), "- with a page rank of ", value[-1][1])
+        except IndexError:
+            pass
 
     # ----------------------------------- Graph Creation --------------------------------------
 
@@ -84,13 +96,6 @@ def graphAnalyzer(graph):
 
     nx.draw(G.to_undirected(), pos, node_size=2, width=.05, edge_color='grey', node_color=node_color)
     plt.savefig("graph_with_layout.png")
-
-    plt.figure()
-
-    node_color = ['blue' for _ in range(len(G.nodes()))]
-    node_color[0] = 'red'
-    nx.draw(G.to_undirected(), node_color=node_color, node_size=2, width=.05, edge_color='grey')
-    plt.savefig("graph_without_layout.png")
 
 
 def removeIsolatedNodes(G):
@@ -116,5 +121,8 @@ def associatingPageRankToNode(pr, cluster):
 
 if __name__ == "__main__":
     top = time()
-    graphAnalyzer("network_depth_2.gml")
+    kmeans = input(
+        "Do you want to use the K-Means algorithm to cluster (True [recommended]/False) ? (if False the DBSCAN algorithm will be used) \n")
+
+    graphAnalyzer("network_depth_2.gml", kmeans)
     print(time() - top)
