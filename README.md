@@ -29,4 +29,6 @@ The first parameter is the title of the <i>Wikipedia</i> page you want suggestio
  
  <li>Then run the <var>graphAnalyzer.py</var> file. This will display a list of all the suggested pages and their related PageRank. It will also create a graph called <var>graph_with_layout.png</var> where you will be able to identify the different clusters.</li> <br>
  
- <b>Warning :</b> Please keep in mind that the DBSCAN algorithm does not provide a really relevant output and that it might take up to 10min to run. Therefore, we recommend you to use the K-Means algorithm (that is to give False as input when running <var>graphAnalyzer.py</var>)
+<p> By default two graphs are already constructed as .gml files, which will avoid you to waste time. If you want to use one of them, you just have to go to the <var>graphAnalyzer.py</var> file and specify with file you want analyze line 127. </p> <br>
+  
+<b>Warning :</b> Please keep in mind that the DBSCAN algorithm does not provide a really relevant output and that it might take up to 10min to run. Therefore, we recommend you to use the K-Means algorithm (that is to give False as input when running <var>graphAnalyzer.py</var>)
