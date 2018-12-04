@@ -10,7 +10,7 @@ def graphConstructor(wikiInput, stop):
     fifo = Fifo.Fifo()
     hashT = hashingTable.UrlDistinctTester()
     depthC = depthController.DepthController(stop)
-    fifo.addElement(wikiInput) # initialization of the fifo
+    fifo.addElement(wikiInput)  # initialization of the fifo
 
     G = nx.DiGraph()  # creating direct graph
 
@@ -50,15 +50,14 @@ def graphConstructor(wikiInput, stop):
 
         depthC.cursorUpdate()
 
-    nx.write_gml(G, "network_depth_2.gml") # saving the graph into a .gml file
-
-
-
+    nx.write_gml(G, "network_depth_2.gml")  # saving the graph into a .gml file
 
 
 if __name__ == "__main__":
     top = time()
+    title = input("About which Wikipedia page do you want to get suggestions ? \n");
+    depth = input("What is the depth limit ? (recommended 2)\n")
     graphConstructor(
-        "http://en.wikipedia.org/w/api.php/?action=query&titles=England&prop=revisions&rvprop=timestamp|content&format=json&rvdir=older&rvstart=2018-09-25T00:00:00Z&rvend=2017-01-03T00:00:00Z&rvlimit=1",
-        1)
+        "http://en.wikipedia.org/w/api.php/?action=query&titles=" + title + "&prop=revisions&rvprop=timestamp|content&format=json&rvdir=older&rvstart=2018-09-25T00:00:00Z&rvend=2017-01-03T00:00:00Z&rvlimit=1",
+        int(depth))
     print(time() - top)

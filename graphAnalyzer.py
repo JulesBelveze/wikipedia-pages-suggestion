@@ -1,16 +1,17 @@
-import random
-import dbscan_tes
+import dbscan
 import PageRank
+import Kmeans
 import re
+import random
+import fa2
+import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
 from time import time
-import fa2
-from sklearn.cluster import KMeans
-import numpy as np
 
 
-def graphAnalyzer(graph, scikit_cluster=False):
+
+def graphAnalyzer(graph, kmeans=False):
     """Argument: the path to find a .gml graph file, boolean : if yes using scikit-learn KMean to cluster otherwise
     using our dbscan algorithm.
     Will page rank and cluster the nodes in order to return the highest page rank page in the three biggest clusters
@@ -51,23 +52,19 @@ def graphAnalyzer(graph, scikit_cluster=False):
 
     pos = forceatlas2.forceatlas2_networkx_layout(G,
                                                   pos=None,
-                                                  iterations=300);
+                                                  iterations=1000);
 
-    if scikit_cluster:
+    if kmeans:
         # converting positions into a list of np.array
         pos_list = [np.array([elt[0], elt[1]]) for key, elt in pos.items()]
 
-        # clustering the nodes according to the AffinityPropagation algorithm using scikit-learn
-        clustering = KMeans().fit(pos_list)
-        clustering = clustering.labels_
-
-        # filtering too small clusters
-        clusters = filteredCluster(clustering)
+        # clustering the nodes according to the kmeans algorithm
+        clusters = Kmeans.kmeans(pos_list, 8, 0.01, 300)
 
     else:
         pos = {key: np.array([elt[0], elt[1]]) for key, elt in pos.items()}
-        pos_transf = dbscan_tes.transf(pos)  # changing position format to be able to use it in DBSCAN
-        clusters = dbscan_tes.dbscan(pos_transf, 30, 20)  # clustering
+        pos_transf = dbscan.transf(pos)  # changing position format to be able to use it in DBSCAN
+        clusters = dbscan.dbscan(pos_transf, 40, 20)  # clustering
 
     cluster_with_pr = associatingPageRankToNode(pr, clusters)
 
@@ -80,7 +77,7 @@ def graphAnalyzer(graph, scikit_cluster=False):
     for key, value in cluster_with_pr.items():
         try:
             node_index = value[-1][0]  # retrieving the node index
-            title_node = re.search(r'titles=(\w*\s\w*|\w*)',
+            title_node = re.search(r'titles=(.*?)\&',
                                    list(G.nodes())[node_index])  # getting the title of the Wikipedia page
             print("•", title_node.group(1), "- with a page rank of ", value[-1][1])
         except IndexError:
@@ -122,33 +119,10 @@ def associatingPageRankToNode(pr, cluster):
     return cluster_with_pr
 
 
-def filteredCluster(clustering):
-    """function taking KMean labels
-    and returning  a dic of cluster with cluster number as key and list of node as value after removing all clusters
-    with less than 10 nodes (they are all gathered in cluster number 0)"""
-
-    # retrieving the index of nodes in each cluster and creating a dict where key is
-    # the cluster number and value a list of all the nodes in that cluster
-    clusters = {}
-    for index, elt in enumerate(list(clustering)):
-        try:
-            clusters[elt].append(index)
-        except KeyError:
-            clusters[elt] = [index]
-
-    # starting to filter too small clusters
-    filtered_cluster, k = {0: []}, 1
-    for key, elt in clusters.items():
-        if len(clusters[key]) > 10:
-            filtered_cluster[k] = elt
-            k += 1
-        else:
-            filtered_cluster[0].extend(elt)
-
-    return filtered_cluster
-
-
 if __name__ == "__main__":
     top = time()
-    graphAnalyzer("network_depth_2.gml", True)
+    kmeans = input(
+        "Do you want to use the K-Means algorithm to cluster (True [recommended]/False) ? (if False the DBSCAN algorithm will be used) \n")
+
+    graphAnalyzer("network_depth_2.gml", kmeans)
     print(time() - top)
